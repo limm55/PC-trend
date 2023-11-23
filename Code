@@ -1,0 +1,217 @@
+###############################################################################################
+## Time trends of age-standardised rates of incidence and mortality of PC in Europe (35-84 yrs)
+## Data source: CI5plus and World Health Organization Mortality Database
+## Dataset: ASRtrend, ASMRtrend
+###############################################################################################
+mat<-matrix(c(1:4,28,5:7,28,28,8:26,28,rep(27,5)),nrow=7,byrow=TRUE); 
+layout(mat); 
+par(mar=c(2,3,1,0.5),mgp=c(1.2,0.2,0),tcl=-0.2)
+for (j in seq(length(countrylist))){
+plot(c(1980,2020),c(0,440),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="Year",ylab="Rate")
+axis(1,at=seq(1980,2020,10),labels=seq(1980,2020,10),cex.axis=0.9)
+axis(2,at=seq(0,400,100),labels=seq(0,400,100),las=1,cex.axis=0.9)
+text(1980,420,countrylist[j],cex=1,font=2,adj=0)
+am<-subset(ASRtrend, countryname==countrylist[j])
+lines(am$year,am$ASR,col=4,lwd=2)
+bm<-subset(ASMRtrend, countryname==countrylist[j])
+lines(bm$year,bm$ASMR,col=2,lwd=2)
+}
+plot(c(25,85),c(0,120),type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+lines(seq(30,40,5),rep(50,3),lty=1,col=4,lwd=2); text(42,50,"Incidence",cex=1.3,col=1,font=2,adj=0)
+lines(seq(60,70,5),rep(50,3),lty=1,col=2,lwd=2); text(72,50,"Mortality",cex=1.3,col=1,font=2,adj=0)
+
+layout(mat); 
+par(mar=c(2,3,1,0.5),mgp=c(1.2,0.2,0),tcl=-0.2)
+colcyan<-rgb(0/255,255/255,255/255,alpha=0.7)
+colgreen<-rgb(0/255,255/255,0/255,alpha=0.7)
+colblue<-rgb(0/255,0/255,255/255,alpha=0.7)
+colred<-rgb(255/255,0/255,0/255,alpha=0.7)
+for (j in seq(length(countrylist))){
+plot(c(0,440),c(0,70),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="Incidence",ylab="Mortality")
+axis(1,at=seq(0,400,100),labels=seq(0,400,100),cex.axis=0.9)
+axis(2,at=seq(0,60,10),labels=seq(0,60,10),las=1,cex.axis=0.9)
+text(0,68,countrylist[j],cex=1,font=2,adj=0)
+am<-subset(ASRtrend, countryname==countrylist[j])
+bm<-subset(ASMRtrend, countryname==countrylist[j])
+cm<-inner_join(am,bm,by="year")
+lines(cm$ASR,cm$ASMR)
+points(cm[which(cm$year==1980),]$ASR, cm[which(cm$year==1980),]$ASMR, pch=16, col=colcyan, cex=1.3)
+points(cm[which(cm$year==1990),]$ASR, cm[which(cm$year==1990),]$ASMR, pch=16, col=colgreen, cex=1.3)
+points(cm[which(cm$year==2000),]$ASR, cm[which(cm$year==2000),]$ASMR, pch=16, col=colblue, cex=1.3)
+points(cm[which(cm$year==2010),]$ASR, cm[which(cm$year==2010),]$ASMR, pch=16, col=colred, cex=1.3)
+text(0,59,paste0("(",min(cm$year),"-",max(cm$year),")"),cex=0.9,adj=0)
+}
+plot(c(25,85),c(0,120),type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+legend(40,60,c("Year"),col=c("white"),cex=1.3,box.col="white")
+legend(45,60,c("1980"),col=c("cyan"),pch=16,cex=1.3,box.col="white")
+legend(50,60,c("1990"),col=c("green"),pch=16,cex=1.3,box.col="white")
+legend(55,60,c("2000"),col=c("blue"),pch=16,cex=1.3,box.col="white")
+legend(60,60,c("2010"),col=c("red"),pch=16,cex=1.3,box.col="white")
+
+####################################################
+## AAPC (Incidence: 1998-2007; Mortality: 2008-2017)
+####################################################
+Iapc.bis<-subset(ASRtrend, year %in% c(1998:2007) & countryname %in% countrylist)
+Mapc.bis<-subset(ASMRtrend, year %in% c(2008:2017) & countryname %in% countrylist)
+iapc.bis<-mapc.bis<-matrix(NA, nrow=26, ncol=4)
+for (i in seq(length(countrylist))){
+ii.bis<-subset(Iapc.bis, countryname==countrylist[i])
+imodel<-lm(log(ASR)~year, data=ii.bis)
+islope<-coef(summary(imodel))[2,1]
+ise<-coef(summary(imodel))[2,2]
+iapc.bis[i,1]<-countrylist[i]
+iapc.bis[i,2]<-(exp(islope)-1)*100
+iapc.bis[i,3]<-(exp(islope-1.96*ise)-1)*100
+iapc.bis[i,4]<-(exp(islope+1.96*ise)-1)*100
+mm.bis<-subset(Mapc.bis, countryname==countrylist[i])
+mmodel<-lm(log(ASMR)~year, data=mm.bis)
+mslope<-coef(summary(mmodel))[2,1]
+mse<-coef(summary(mmodel))[2,2]
+mapc.bis[i,1]<-countrylist[i]
+mapc.bis[i,2]<-(exp(mslope)-1)*100
+mapc.bis[i,3]<-(exp(mslope-1.96*mse)-1)*100
+mapc.bis[i,4]<-(exp(mslope+1.96*mse)-1)*100
+}
+colnames(iapc.bis)<-c("country","iapc","iapc.cl","iapc.cu")
+colnames(mapc.bis)<-c("name","mapc","mapc.cl","mapc.cu")
+imapc.bis<-cbind(iapc.bis,mapc.bis)
+
+################################
+## Age-specific rates over time 
+## Dataset: Iagecurve, Magecurve
+################################
+layout(mat);
+par(mar=c(2.5,2.5,0.5,0.5),mgp=c(1.2,0.2,0),tcl=-0.2)
+for (j in seq(length(countrylist))){
+plot(c(35,85),c(0,1300),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="Age (years)",ylab="Rate")
+axis(1,at=seq(35,85,10),labels=seq(35,85,10),cex.axis=0.9)
+axis(2,at=seq(0,1200,200),labels=seq(0,1200,200),las=1,cex.axis=0.9)
+text(35,1250,countrylist[j],cex=1,font=2,adj=0)
+cm<-subset(Iagecurve, countryname==countrylist[j])
+em<-subset(Magecurve, countryname==countrylist[j])
+  for (i in seq(length(periodcode))){
+  dm<-subset(cm, period==periodcode[i])
+  lines(dm$age*5-2.5,dm$incidence,col=c("lightblue","steelblue1","steelblue3","blue")[i],lty=1,lwd=1.5)
+  fm<-subset(em, period==periodcode[i])
+  lines(fm$age*5-2.5,fm$mortality,col=c("pink1","pink3","hotpink","red")[i],lty=2,lwd=1.5)
+  }
+}
+plot(c(15,85),c(0,120),type="n",cex.lab=0.9,xaxt="n",yaxt="n",xlab="",ylab="",bty="n")
+text(25,90,"Incidence",cex=1.2,font=2)
+text(51,90,"Mortality",cex=1.2,font=2)
+lines(seq(15,35,10),rep(74,3),lty=1,col="lightblue",lwd=1.5);lines(seq(41,61,10),rep(74,3),lty=2,col="pink1",lwd=1.5);text(69,74,"1998-2002",cex=1,col=1,font=2)
+lines(seq(15,35,10),rep(54,3),lty=1,col="steelblue1",lwd=1.5);lines(seq(41,61,10),rep(54,3),lty=2,col="pink3",lwd=1.5);text(69,54,"2003-2007",cex=1,col=1,font=2)
+lines(seq(15,35,10),rep(34,3),lty=1,col="steelblue3",lwd=1.5);lines(seq(41,61,10),rep(34,3),lty=2,col="hotpink",lwd=1.5);text(69,34,"2008-2012",cex=1,col=1,font=2)
+lines(seq(15,35,10),rep(14,3),lty=1,col="blue",lwd=1.5);lines(seq(41,61,10),rep(14,3),lty=2,col="red",lwd=1.5);text(69,14,"2013-2017",cex=1,col=1,font=2)
+
+################################
+## Incidence-to-mortality ratio
+################################
+Ip<-cbind(Iagecurve,Segi)
+Ip$Scases<-Ip$incidence/100000*Ip$Segi
+Iasr<-aggregate(cbind(Ip$Scases,Ip$Segi),by=list(Ip$period,Ip$countryname),FUN=sum); 
+colnames(Iasr)<-c("period","countryname","Scases","Spop")
+Iasr$asir<-Iasr$Scases/Iasr$Spop*100000
+Mp<-cbind(Magecurve,Segi)
+Mp$Sdeaths<-Mp$deaths/Mp$pop*Mp$Segi
+Masr<-aggregate(cbind(Mp$Sdeaths,Mp$Segi),by=list(Mp$period,Mp$countryname),FUN=sum); 
+colnames(Masr)<-c("period","countryname","Sdeaths","Spop")
+Masr$asmr<-Masr$Sdeaths/Masr$Spop*100000
+IMasr<-right_join(Iasr, Masr,by=c("period","countryname"));
+IMasr$ratio<-round(IMasr$asir/IMasr$asmr,1); 
+IMasr1<-cast(IMasr, countryname~period)
+null1<-c("Northern Europe","","","","");
+null2<-c("Central and Southern Europe","","","","");
+null3<-c("Baltic countries and Eastern Europe","","","","");
+IMasr2<-rbind(null1,
+              IMasr1[which(IMasr1$countryname=="Denmark"),],
+              IMasr1[which(IMasr1$countryname=="Sweden"),],
+              IMasr1[which(IMasr1$countryname=="Norway"),],
+              IMasr1[which(IMasr1$countryname=="Ireland"),],
+              IMasr1[which(IMasr1$countryname=="UK, England & Wales"),],
+              IMasr1[which(IMasr1$countryname=="UK, Northern Ireland"),],
+              IMasr1[which(IMasr1$countryname=="UK, Scotland"),],
+              null2,
+              IMasr1[which(IMasr1$countryname=="The Netherlands"),],
+              IMasr1[which(IMasr1$countryname=="Germany"),],
+              IMasr1[which(IMasr1$countryname=="Austria"),],
+              IMasr1[which(IMasr1$countryname=="France"),],
+              IMasr1[which(IMasr1$countryname=="Switzerland"),],
+              IMasr1[which(IMasr1$countryname=="Italy"),],
+              IMasr1[which(IMasr1$countryname=="Spain"),],
+              IMasr1[which(IMasr1$countryname=="Cyprus"),],
+              IMasr1[which(IMasr1$countryname=="Slovenia"),],
+              IMasr1[which(IMasr1$countryname=="Croatia"),],
+              null3,
+              IMasr1[which(IMasr1$countryname=="Estonia"),],
+              IMasr1[which(IMasr1$countryname=="Latvia"),],
+              IMasr1[which(IMasr1$countryname=="Lithuania"),],
+              IMasr1[which(IMasr1$countryname=="Belarus"),],
+              IMasr1[which(IMasr1$countryname=="Ukraine"),],
+              IMasr1[which(IMasr1$countryname=="Poland"),],
+              IMasr1[which(IMasr1$countryname=="Czechia"),],
+              IMasr1[which(IMasr1$countryname=="Slovakia"),],
+              IMasr1[which(IMasr1$countryname=="Bulgaria"),])
+IMasr2$ID<-c(1:29)
+IMasr3<-IMasr2[order(IMasr2$ID,decreasing=TRUE),]
+IMasr3$srr2000<-as.numeric(IMasr3[,2])
+IMasr3$srr2005<-as.numeric(IMasr3[,3])
+IMasr3$srr2010<-as.numeric(IMasr3[,4])
+IMasr3$srr2015<-as.numeric(IMasr3[,5])
+IMasr4<-IMasr3[,c(10,9,8,7)]
+countrybar<-c("",IMasr2[c(2:8),1],"",IMasr2[c(10:19),1],"",IMasr2[c(21:29),1])
+srr<-barplot(t(IMasr4),horiz=TRUE,las=1,beside=TRUE,col=c("gray50","gray65","gray80","gray95"),xlim=c(-9,14),xaxt="n")
+axis(side=1,at=seq(0,14,2),labels=seq(0,14,2),cex.axis=0.9,mgp=c(-1,-0.5,-1.5))
+mtext(rev(countrybar),side=2,at=srr[2,]+0.5,las=1,adj=1,line=-15,cex=0.85)
+continame<-rev(c("Northern Europe", rep("",7),"Central and Southern Europe",rep("",10),"Baltic countries and Eastern Europe",rep("",9)))
+mtext(paste0(continame,""),side=2,at=srr[2,]+0.5,las=1,adj=1,line=-15,cex=0.9,font=4)
+mtext("Standardised rate ratios (incidence/mortality)",side=1,las=1,adj=0.86,line=0.5,cex=0.9)
+text(t(IMasr4)[1,]+0.3, srr[1,]+0.1, formatC(t(IMasr4)[1,],digits=1,format="f"), cex=0.6, adj=0.5)
+text(t(IMasr4)[2,]+0.3, srr[2,]+0.1, formatC(t(IMasr4)[2,],digits=1,format="f"), cex=0.6, adj=0.5)
+text(t(IMasr4)[3,]+0.3, srr[3,]+0.1, formatC(t(IMasr4)[3,],digits=1,format="f"), cex=0.6, adj=0.5)
+text(t(IMasr4)[4,]+0.3, srr[4,]+0.1, formatC(t(IMasr4)[4,],digits=1,format="f"), cex=0.6, adj=0.5)
+legend(10,20,c("1998-2002","2003-2007","2008-2012","2013-2017"),fill=c("gray95","gray80","gray65","gray50"),col=c("gray95","gray80","gray65","gray50"),box.lty=0,cex=1)
+lines(c(0,0),c(-0.5,140),lty=3)
+
+###################################################
+## PC incidence and PSA trends
+## Dataset: PSA
+## Take Denmark and Sweden for illustrating purpose
+################################################### 
+## Denmark
+psa.denmark<-subset(PSA, country=="Denmark")
+pc.denmark<-subset(ASRtrend, countryname=="Denmark")
+par(mar=c(2.5,3,1.5,3),mgp=c(1.2,0.2,0),tcl=-0.2)
+plot(c(1980,2020),c(0,440),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="",ylab="")
+axis(1,at=seq(1980,2020,10),labels=seq(1980,2020,10),cex.axis=0.9)
+axis(2,at=seq(0,400,100),labels=seq(0,400,100),las=1,cex.axis=0.9)
+mtext("Year",side=1,line=1.2,cex=0.7)
+mtext("Incidence rate (/100,000)",side=2,line=1.5,cex=0.7)
+text(1980,420,"Denmark",cex=1,font=2,adj=0)
+lines(pc.denmark$year,pc.denmark$ASR,col=4,lwd=2)
+par(new=TRUE)
+plot(c(1980,2020),c(0,11),type="n",axes=FALSE,xlab="",ylab="")
+axis(side=4,at=pretty(c(0,11)),las=1,cex.axis=0.9)
+mtext("ASR of PSA (/1000)",side=4,line=1.2,cex=0.7)
+edu1<-subset(psa.denmark,Group_education=="Long"); lines(edu1$year,edu1$PSA,col="grey55",lwd=1); points(edu1$year,edu1$PSA,pch=16,col="grey55",cex=0.7)
+edu2<-subset(psa.denmark,Group_education=="Medium"); lines(edu2$year,edu2$PSA,col="grey55",lwd=1); points(edu2$year,edu2$PSA,pch=16,col="grey55",cex=0.7)
+edu3<-subset(psa.denmark,Group_education=="Short"); lines(edu3$year,edu3$PSA,col="grey55",lwd=1); points(edu3$year,edu3$PSA,pch=16,col="grey55",cex=0.7)
+legend(1980,9,c("Prostate cancer incidence","PSA testing by education"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(16,16),border=NA,cex=0.8,bty="n")
+
+### Sweden
+psa.sweden<-subset(PSA, country=="Sweden (estimates)")
+pc.sweden<-subset(ASRtrend, countryname=="Sweden")
+par(mar=c(2.5,3,1.5,3),mgp=c(1.2,0.2,0),tcl=-0.2)
+plot(c(1980,2020),c(0,440),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="",ylab="")
+axis(1,at=seq(1980,2020,10),labels=seq(1980,2020,10),cex.axis=0.9)
+axis(2,at=seq(0,400,100),labels=seq(0,400,100),las=1,cex.axis=0.9)
+mtext("Year",side=1,line=1.2,cex=0.7)
+mtext("Incidence rate (/100,000)",side=2,line=1.5,cex=0.7)
+text(1980,420,"Sweden",cex=1,font=2,adj=0)
+lines(pc.sweden$year,pc.sweden$ASR,col=4,lwd=2)
+par(new=TRUE)
+plot(c(1980,2020),c(0,110),type="n",axes=FALSE,xlab="",ylab="")
+axis(side=4,at=pretty(c(0,110)),las=1,cex.axis=0.9)
+mtext("Rate of PSA testing (%)",side=4,line=1.2,cex=0.7)
+lines(psa.sweden$year,psa.sweden$PSA,col="grey55",lwd=2); points(psa.sweden$year,psa.sweden$PSA,pch=16,col="grey55",cex=0.8)
+legend(1980,90,c("Prostate cancer incidence","PSA testing"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(16,16),border=NA,cex=0.8,bty="n")
