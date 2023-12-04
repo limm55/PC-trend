@@ -178,7 +178,7 @@ lines(c(0,0),c(-0.5,140),lty=3)
 ## Dataset: PSA
 ## Take Denmark and Sweden for illustrating purpose
 ################################################### 
-## Denmark
+### Denmark
 psa.denmark<-subset(PSA, country=="Denmark")
 pc.denmark<-subset(ASRtrend, countryname=="Denmark")
 par(mar=c(2.5,3,1.5,3),mgp=c(1.2,0.2,0),tcl=-0.2)
@@ -192,14 +192,12 @@ lines(pc.denmark$year,pc.denmark$ASR,col=4,lwd=2)
 par(new=TRUE)
 plot(c(1980,2020),c(0,11),type="n",axes=FALSE,xlab="",ylab="")
 axis(side=4,at=pretty(c(0,11)),las=1,cex.axis=0.9)
-mtext("ASR of PSA (/1000)",side=4,line=1.2,cex=0.7)
-edu1<-subset(psa.denmark,Group_education=="Long"); lines(edu1$year,edu1$PSA,col="grey55",lwd=1); points(edu1$year,edu1$PSA,pch=16,col="grey55",cex=0.7)
-edu2<-subset(psa.denmark,Group_education=="Medium"); lines(edu2$year,edu2$PSA,col="grey55",lwd=1); points(edu2$year,edu2$PSA,pch=16,col="grey55",cex=0.7)
-edu3<-subset(psa.denmark,Group_education=="Short"); lines(edu3$year,edu3$PSA,col="grey55",lwd=1); points(edu3$year,edu3$PSA,pch=16,col="grey55",cex=0.7)
-legend(1980,9,c("Prostate cancer incidence","PSA testing by education"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(16,16),border=NA,cex=0.8,bty="n")
+mtext("ASR (/1000 person-years)",side=4,line=1.5,cex=0.7)
+edu2<-subset(psa.denmark,Group_education=="Medium"); lines(edu2$year,edu2$PSA,col="grey55",lwd=2); points(edu2$year,edu2$PSA,pch=16,col="grey55",cex=0.8)
+legend(1980,9,c("Prostate cancer","PSA testing (medium education)"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(NA,16),border=NA,cex=0.8,bty="n")
 
 ### Sweden
-psa.sweden<-subset(PSA, country=="Sweden (estimates)")
+psa.sweden<-subset(PSA, country=="Sweden")
 pc.sweden<-subset(ASRtrend, countryname=="Sweden")
 par(mar=c(2.5,3,1.5,3),mgp=c(1.2,0.2,0),tcl=-0.2)
 plot(c(1980,2020),c(0,440),type="n",cex.lab=1,xaxt="n",yaxt="n",xlab="",ylab="")
@@ -212,6 +210,6 @@ lines(pc.sweden$year,pc.sweden$ASR,col=4,lwd=2)
 par(new=TRUE)
 plot(c(1980,2020),c(0,110),type="n",axes=FALSE,xlab="",ylab="")
 axis(side=4,at=pretty(c(0,110)),las=1,cex.axis=0.9)
-mtext("Rate of PSA testing (%)",side=4,line=1.2,cex=0.7)
+mtext("Prevalence (%)",side=4,line=1.5,cex=0.7)
 lines(psa.sweden$year,psa.sweden$PSA,col="grey55",lwd=2); points(psa.sweden$year,psa.sweden$PSA,pch=16,col="grey55",cex=0.8)
-legend(1980,90,c("Prostate cancer incidence","PSA testing"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(16,16),border=NA,cex=0.8,bty="n")
+legend(1980,95,c("Prostate cancer","PSA testing"),lty=c(1,1),lwd=c(2,2),col=c(4,"grey55"),pch=c(NA,16),border=NA,cex=0.8,bty="n")
